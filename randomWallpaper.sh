@@ -13,10 +13,20 @@ WALLS=$HOME/Pictures/todayswalls
 #   nitrogen
 #   gsettings (for GNOME 3)
 #   feh
+#   xfconf-query
 TOOL="nitrogen"
+
+# Number of screens
+NB_SCREENS=2
 
 ## END CONFIGURATION
 
+
+# Check whether the number of screens provided is an integer
+if [ -z "$(echo ${NB_SCREENS} | grep -E '^[0-9]*$')" ]; then
+    echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > /dev/stderr
+    exit 3
+fi
 
 # Check whether the walls directory exists
 if [ ! -d "${WALLS}" ]; then
@@ -30,27 +40,23 @@ if [ -z "$(find ${WALLS} -type f)" ]; then
     exit 1
 fi
 
+# Check if the chosen tool is installed
+if [ -z "$(command -v ${TOOL})" ]; then
+    echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" > /dev/stderr
+    echo "\$PATH: [ $PATH ]" > /dev/stderr
+    exit 4
+fi
+
 # Change wallpaper using nitrogen
 function wall_nitrogen {
-    # Nitrogen configuration files
+
+    # Nitrogen configuration file
     WALL_CFG=$HOME/.config/nitrogen/bg-saved.cfg
 
-    # Number of screens
-    NB_SCREENS=2
-
-    # Check configuration
+    # Check nitrogen configuration folder
     if [ ! -d "${WALL_CFG%\/*}" ]; then
         echo "ERROR: directory ${WALL_CFG} does not exist" > /dev/stderr
         exit 2
-    fi
-    if [ -z "$(echo ${NB_SCREENS} | grep -E '^[0-9]*$')" ]; then
-        echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > /dev/stderr
-        exit 3
-    fi
-    if [ -z "$(command -v nitrogen)" ]; then
-        echo 'ERROR: nitrogen does not seem to be installed, or nitrogen is not present in $PATH' > /dev/stderr
-        echo "\$PATH: [ $PATH ]" > /dev/stderr
-        exit 4
     fi
 
     # Empty previous nitrogen configuration
@@ -78,12 +84,6 @@ function wall_nitrogen {
 # Change wallpaper using gsettings
 function wall_gsettings {
 
-    # Check configuration
-    if [ -z "$(command -v gsettings)" ]; then
-        echo "ERROR: gsettings does not seem to be installed. Are you running GNOME 3?" > /dev/stderr
-        exit 4
-    fi
-
     # Picka  wallpaper
     wall="$(find ${WALLS} -type f | shuf -n 1)"
     wall="$(basename ${wall})"
@@ -95,16 +95,24 @@ function wall_gsettings {
 # Change wallpaper using feh
 function wall_feh {
     
-    # Check configuration
-    if [ -z "$(command -v feh)" ]; then
-        echo 'ERROR: feh does not seem to be installed, or feh is not present in $PATH' > /dev/stderr
-        echo "\$PATH: [ $PATH ]" > /dev/stderr
-        exit 4
-    fi
-
     # Pick random wallpapers for all screens
     feh --randomize --bg-scale "${WALLS}"/* &
 }
 
+# Change wallpaper using xfconf-query (XFCE 4)
+function wall_xfconf-query {
+
+    # Loop through screens
+    xfconf-query -c xfce4-desktop -l | grep -E '/backdrop/screen.*/monitor.*/image-path' | while read line; do
+
+        # Pick a wallpaper
+        wall="$(find ${WALLS} -type f | shuf -n 1)"
+
+        # Set it on the current screen
+        xfconf-query -c xfce4-desktop -p "${line}" -s "${wall}"
+    done
+}
+
+# Call function to change wallpaper using chosen tool
 wall_${TOOL}
 

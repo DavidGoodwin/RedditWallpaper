@@ -13,4 +13,4 @@ Tools supported so far:
 + nitrogen
 + feh
 + gsettings (for GNOME 3)
-
++ xfconf-query (for XFCE 4)
