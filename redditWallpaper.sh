@@ -4,10 +4,10 @@
 # Everytime you execute it, it backs up the wallpapers from the last execution to the directory of your choice.
 
 # Wallpapers directory
-WALLS_DIR="~/Pictures/todayswalls"
+WALLS_DIR="$HOME/Pictures/todayswalls"
 
 # Backup directory
-OLD_DIR="~/Pictures/oldwalls"
+OLD_DIR="$HOME/Pictures/oldwalls"
 
 # Check if said directories exist
 mkdir -p "${WALLS_DIR}" "${OLD_DIR}"
