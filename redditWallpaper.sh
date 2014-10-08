@@ -3,11 +3,17 @@
 # This script goes to http://www.reddit.com/r/wallpapers, fetches a few images, and writes them to the directory of your choice.
 # Everytime you execute it, it backs up the wallpapers from the last execution to the directory of your choice.
 
+
+## CONFIGURATION
+
 # Wallpapers directory
 WALLS_DIR="$HOME/Pictures/todayswalls"
 
 # Backup directory
 OLD_DIR="$HOME/Pictures/oldwalls"
+
+## END CONFIGURATION
+
 
 # Check if said directories exist
 mkdir -p "${WALLS_DIR}" "${OLD_DIR}"

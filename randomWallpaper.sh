@@ -2,8 +2,21 @@
 
 # This script selects random wallpapers from a directory of your choice and applies it/them to your screen(s) using the tool of your choice
 
+
+## CONFIGURATION
+
 # Wallpapers directory
 WALLS=$HOME/Pictures/todayswalls
+
+# Tool to change the wallpaper
+# Supported values:
+#   nitrogen
+#   gsettings (for GNOME 3)
+#   feh
+TOOL="nitrogen"
+
+## END CONFIGURATION
+
 
 # Check whether the walls directory exists
 if [ ! -d "${WALLS}" ]; then
@@ -16,13 +29,6 @@ if [ -z "$(find ${WALLS} -type f)" ]; then
     echo "ERROR: directory ${WALLS} doesn't contain any file" > /dev/stderr
     exit 1
 fi
-
-# Tool to change the wallpaper
-# Supported values:
-#   nitrogen
-#   gsettings (for GNOME 3)
-#   feh
-TOOL="nitrogen"
 
 # Change wallpaper using nitrogen
 function wall_nitrogen {
