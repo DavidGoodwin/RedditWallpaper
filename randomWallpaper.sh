@@ -22,11 +22,10 @@ fi
 #   nitrogen
 #   gsettings (for GNOME 3)
 #   feh
-TOOL="feh"
+TOOL="nitrogen"
 
-## PART FOR NITROGEN
-if [ "${TOOL}" = "nitrogen" ]; then
-
+# Change wallpaper using nitrogen
+function wall_nitrogen {
     # Nitrogen configuration files
     WALL_CFG=$HOME/.config/nitrogen/bg-saved.cfg
 
@@ -68,10 +67,11 @@ if [ "${TOOL}" = "nitrogen" ]; then
     done
 
     nitrogen --restore
+}
 
-## PART FOR GSETTINGS (GNOME 3)
-elif [ "${TOOL}" = "gsettings" ]; then
-    
+# Change wallpaper using gsettings
+function wall_gsettings {
+
     # Check configuration
     if [ -z "$(command -v gsettings)" ]; then
         echo "ERROR: gsettings does not seem to be installed. Are you running GNOME 3?" > /dev/stderr
@@ -84,9 +84,10 @@ elif [ "${TOOL}" = "gsettings" ]; then
 
     # Set wallpaper
     gsettings set org.gnome.desktop.background picture-uri "file:///${WALLS}/${wall}"
+}
 
-## PART FOR FEH
-elif [ "${TOOL}" = "feh" ]; then
+# Change wallpaper using feh
+function wall_feh {
     
     # Check configuration
     if [ -z "$(command -v feh)" ]; then
@@ -97,4 +98,7 @@ elif [ "${TOOL}" = "feh" ]; then
 
     # Pick random wallpapers for all screens
     feh --randomize --bg-scale "${WALLS}"/* &
-fi
+}
+
+wall_${TOOL}
+
