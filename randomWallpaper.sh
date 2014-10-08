@@ -17,8 +17,12 @@ if [ -z "$(find ${WALLS} -type f)" ]; then
     exit 1
 fi
 
-# Tool to change the wallpaper (so far, nitrogen (for Openbox) and gsettings (for GNOME 3) are supported)
-TOOL="nitrogen"
+# Tool to change the wallpaper
+# Supported values:
+#   nitrogen
+#   gsettings (for GNOME 3)
+#   feh
+TOOL="feh"
 
 ## PART FOR NITROGEN
 if [ "${TOOL}" = "nitrogen" ]; then
@@ -80,4 +84,17 @@ elif [ "${TOOL}" = "gsettings" ]; then
 
     # Set wallpaper
     gsettings set org.gnome.desktop.background picture-uri "file:///${WALLS}/${wall}"
+
+## PART FOR FEH
+elif [ "${TOOL}" = "feh" ]; then
+    
+    # Check configuration
+    if [ -z "$(command -v feh)" ]; then
+        echo 'ERROR: feh does not seem to be installed, or feh is not present in $PATH' > /dev/stderr
+        echo "\$PATH: [ $PATH ]" > /dev/stderr
+        exit 4
+    fi
+
+    # Pick random wallpapers for all screens
+    feh --randomize --bg-scale "${WALLS}"/* &
 fi
