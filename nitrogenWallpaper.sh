@@ -24,8 +24,7 @@ if [ -z "$(echo ${NB_SCREENS} | grep -E '^[0-9]*$')" ]; then
     echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > /dev/stderr
     exit 3
 fi
-which nitrogen
-if [ "$?" -ne 0 ]; then
+if [ -z "$(command -v nitrogen)" ]; then
     echo 'ERROR: nitrogen does not seem to be installed, or nitrogen is not present in $PATH' > /dev/stderr
     echo "\$PATH: [ $PATH ]" > /dev/stderr
     exit 4
