@@ -6,4 +6,11 @@ This downloads some wallpapers from http://www.reddit.com/r/wallpapers "hot" pag
 
 randomWallpaper.sh
 --------------------
-This picks any number of wallpapers from a directory of your choice (according to the number of screens you have defined) and sets them using the tool of your choice (so far, nitrogen and gsettings (GNOME 3) are supported).
+This picks any number of wallpapers from a directory of your choice (according to the number of screens you have defined) and sets them using the tool of your choice.
+
+Tools supported so far:
+
++ nitrogen
++ feh
++ gsettings (for GNOME 3)
+
