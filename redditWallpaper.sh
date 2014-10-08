@@ -17,7 +17,7 @@ mv "${WALLS_DIR}"/* "${OLD_DIR}/"
 
 # Go to reddit.com/r/wallpapers, find parts of the page source that look like 'http[s?]://...png|jpg', cut the URLs out, and download them to the wallpapers directory
 curl "www.reddit.com/r/wallpapers/" 2>/dev/null | tr \< \\n | grep -E 'https?://[^"]*\.[jpng]*"' | sed -e 's!.*https\?://\([^"]*\.[jpng]*\).*!\1!g' | sort -u | while read line; do
-    FILENAME="$(echo $line | cut -d\/ -f2)"
+    FILENAME="$(basename $line)"
     wget "$line" -O "${WALLS_DIR}/${FILENAME}"
 done
 
