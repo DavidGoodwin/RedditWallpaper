@@ -11,6 +11,26 @@ WALL_CFG=~/.config/nitrogen/bg-saved.cfg
 # Number of screens
 NB_SCREENS=2
 
+# Check configuration
+if [ ! -d "${WALLS}" ]; then
+    echo "ERROR: directory ${WALLS} does not exist" > /dev/stderr
+    exit 1
+fi
+if [ ! -d "${WALL_CFG%\/*}" ]; then
+    echo "ERROR: directory ${WALL_CFG} does not exist" > /dev/stderr
+    exit 2
+fi
+if [ -z "$(echo ${NB_SCREENS} | grep -E '^[0-9]*$')" ]; then
+    echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > /dev/stderr
+    exit 3
+fi
+which nitrogen
+if [ "$?" -ne 0 ]; then
+    echo 'ERROR: nitrogen does not seem to be installed, or nitrogen is not present in $PATH' > /dev/stderr
+    echo "\$PATH: [ $PATH ]" > /dev/stderr
+    exit 4
+fi
+
 # Empty previous nitrogen configuration
 rm -f "${WALL_CFG}"
 touch "${WALL_CFG}"

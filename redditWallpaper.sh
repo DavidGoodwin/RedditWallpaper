@@ -9,6 +9,9 @@ WALLS_DIR="~/Pictures/todayswalls"
 # Backup directory
 OLD_DIR="~/Pictures/oldwalls"
 
+# Check if said directories exist
+mkdir -p "${WALLS_DIR}" "${OLD_DIR}"
+
 # Backup last execution's wallpapers to the backup directory
 mv "${WALLS_DIR}"/* "${OLD_DIR}/"
 
