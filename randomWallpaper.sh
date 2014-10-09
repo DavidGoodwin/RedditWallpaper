@@ -5,6 +5,9 @@
 
 ## CONFIGURATION
 
+# Configuration file
+CONF_FILE="$HOME/.config/randomWallpaper/config"
+
 # Wallpapers directory
 WALLS=$HOME/Pictures/todayswalls
 
@@ -25,6 +28,13 @@ NB_SCREENS=2
 ## END CONFIGURATION
 
 
+# Try to load the tool to use from the configuration file
+function load_tool_config {
+    grep 'tool' "${CONF_FILE}" | cut -d\  -f2
+}
+
+
+# Try to guess the best tool to use depending on the environment
 function guess_env {
     case "${DESKTOP_SESSION}" in
         *box|awesome|xmonad|i3|spectrwm )
@@ -78,13 +88,23 @@ if [ -z "$(find ${WALLS} -type f)" ]; then
 fi
 
 # Try to guess desktop environment
-TOOL="$(guess_env)"
+if [ -f "${CONF_FILE}" ]; then
+    TOOL="$(load_tool_config)"
+else
+    TOOL="$(guess_env)"
+fi
 
 # Check if the chosen tool is installed
 if [ -z "$(command -v ${TOOL})" ]; then
     echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" > /dev/stderr
     echo "\$PATH: [ $PATH ]" > /dev/stderr
     exit 4
+fi
+
+# If there is no configuration file yet, write one
+if [ ! -f "${CONF_FILE}" ]; then
+    mkdir -p "${CONF_FILE%\/*}"
+    echo "tool ${TOOL}" > "${CONF_FILE}"
 fi
 
 # Change wallpaper using nitrogen
