@@ -27,7 +27,7 @@ NB_SCREENS=2
 
 function guess_env {
     case "${DESKTOP_SESSION}" in
-        *box )
+        *box|awesome|xmonad|i3|spectrwm )
             if [ -d "${NITROGEN_CFG%\/*}" ]; then
                 if [ ! -z "$(command -v nitrogen)" ]; then
                     echo "nitrogen"
