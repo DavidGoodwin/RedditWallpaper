@@ -1,4 +1,4 @@
-RedditWallpaper
+AlfScripts
 ==========
 redditWallpaper.sh
 ------------------
