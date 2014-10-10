@@ -23,7 +23,7 @@ NITROGEN_CFG=$HOME/.config/nitrogen/bg-saved.cfg
 TOOL=""
 
 # Number of screens
-NB_SCREENS=1
+NB_SCREENS=2
 
 ## END CONFIGURATION
 
@@ -36,20 +36,28 @@ function load_tool_config {
 
 # Try to guess the best tool to use depending on the environment
 function guess_env {
-
-	    if [ ! -z "$(command -v nitrogen)" ]; then
-		echo "nitrogen"
-                    
+    case "${DESKTOP_SESSION}" in
+        *box|awesome|xmonad|i3|spectrwm )
+            if [ -d "${NITROGEN_CFG%\/*}" ]; then
+                if [ ! -z "$(command -v nitrogen)" ]; then
+                    echo "nitrogen"
+                fi
             elif [ ! -z "$(command -v feh)" ]; then
                 echo "feh"
-           
-            elif [ ! -z "$(command -v gsettings)" ]; then
+            fi
+            ;;
+        gnome* )
+            if [ ! -z "$(command -v gsettings)" ]; then
                 echo "gsettings"
-	    
-            elif [ ! -z "$(command -v xfconf-query)" ]; then
+            fi
+            ;;
+        xfce*|Xfce* )
+            if [ ! -z "$(command -v xfconf-query)" ]; then
                 echo "xfconf-query"
-            
-            elif [ ! -z "$(command -v zenity)" ]; then
+            fi
+            ;;
+        * )
+            if [ ! -z "$(command -v zenity)" ]; then
                 zenity --list --title='What tool do you want to use?' --column='select' --radiolist --column='tool' --column='label' --hide-column=2 \
                     FALSE 'nitrogen' 'nitrogen' \
                     FALSE 'feh' 'feh' \
@@ -58,26 +66,24 @@ function guess_env {
             elif [ ! -z "$(command -v kdialog)" ]; then
                 kdialog --radiolist 'What tool do you want to use?' 'nitrogen' 'nitrogen' off 'feh' 'feh' off 'gsettings' 'gsettings (GNOME)' off 'xfconf-query' 'xfconf-query (XFCE)' off 2>/dev/null
             fi
+    esac
 }
 
 # Check whether the number of screens provided is an integer
 if [ -z "$(echo ${NB_SCREENS} | grep -E '^[0-9]*$')" ]; then
-    #echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > /dev/stderr
-    echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" >&2
+    echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > /dev/stderr
     exit 3
 fi
 
 # Check whether the walls directory exists
 if [ ! -d "${WALLS}" ]; then
-    #echo "ERROR: directory ${WALLS} does not exist" > /dev/stderr
-    echo "ERROR: directory ${WALLS} does not exist" >&2
+    echo "ERROR: directory ${WALLS} does not exist" > /dev/stderr
     exit 1
 fi
 
 # Check whether it contains files
 if [ -z "$(find ${WALLS} -type f)" ]; then
-    #echo "ERROR: directory ${WALLS} doesn't contain any file" > /dev/stderr
-    echo "ERROR: directory ${WALLS} doesn't contain any file" >&2
+    echo "ERROR: directory ${WALLS} doesn't contain any file" > /dev/stderr
     exit 1
 fi
 
@@ -90,10 +96,8 @@ fi
 
 # Check if the chosen tool is installed
 if [ -z "$(command -v ${TOOL})" ]; then
-    #echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" > /dev/stderr
-    #echo "\$PATH: [ $PATH ]" > /dev/stderr
-    echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" >&2
-    echo "\$PATH: [ $PATH ]" >&2
+    echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" > /dev/stderr
+    echo "\$PATH: [ $PATH ]" > /dev/stderr
     exit 4
 fi
 
@@ -108,8 +112,7 @@ function wall_nitrogen {
 
     # Check nitrogen configuration folder
     if [ ! -d "${NITROGEN_CFG%\/*}" ]; then
-        #echo "ERROR: directory ${NITROGEN_CFG} does not exist" > /dev/stderr
-        echo "ERROR: directory ${NITROGEN_CFG} does not exist" >&2
+        echo "ERROR: directory ${NITROGEN_CFG} does not exist" > /dev/stderr
         exit 2
     fi
 
