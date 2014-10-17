@@ -71,19 +71,19 @@ function guess_env {
 
 # Check whether the number of screens provided is an integer
 if [ -z "$(echo ${NB_SCREENS} | grep -E '^[0-9]*$')" ]; then
-    echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > /dev/stderr
+    echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > &2
     exit 3
 fi
 
 # Check whether the walls directory exists
 if [ ! -d "${WALLS}" ]; then
-    echo "ERROR: directory ${WALLS} does not exist" > /dev/stderr
+    echo "ERROR: directory ${WALLS} does not exist" > &2
     exit 1
 fi
 
 # Check whether it contains files
 if [ -z "$(find ${WALLS} -type f)" ]; then
-    echo "ERROR: directory ${WALLS} doesn't contain any file" > /dev/stderr
+    echo "ERROR: directory ${WALLS} doesn't contain any file" > &2
     exit 1
 fi
 
@@ -96,8 +96,8 @@ fi
 
 # Check if the chosen tool is installed
 if [ -z "$(command -v ${TOOL})" ]; then
-    echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" > /dev/stderr
-    echo "\$PATH: [ $PATH ]" > /dev/stderr
+    echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" > &2
+    echo "\$PATH: [ $PATH ]" > &2
     exit 4
 fi
 
@@ -112,7 +112,7 @@ function wall_nitrogen {
 
     # Check nitrogen configuration folder
     if [ ! -d "${NITROGEN_CFG%\/*}" ]; then
-        echo "ERROR: directory ${NITROGEN_CFG} does not exist" > /dev/stderr
+        echo "ERROR: directory ${NITROGEN_CFG} does not exist" > &2
         exit 2
     fi
 
