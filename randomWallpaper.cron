@@ -1,1 +1,1 @@
-*/15 * * * * DISPLAY=:0.0 ~/work/github/AlfScripts/randomWallpaper.sh
+*/15 * * * * DISPLAY=:0.0 $HOME/bin/randomWallpaper.sh
