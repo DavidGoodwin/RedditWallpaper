@@ -20,6 +20,7 @@ NITROGEN_CFG=$HOME/.config/nitrogen/bg-saved.cfg
 #   gsettings (for GNOME 3)
 #   feh
 #   xfconf-query (for XFCE 4)
+#   pcmanfm (for Lubuntu only)
 TOOL=""
 
 # Number of screens
@@ -56,6 +57,11 @@ function guess_env {
                 echo "xfconf-query"
             fi
             ;;
+        Lubuntu )
+            if [ ! -z "$(command -v pcmanfm)" ]; then
+                echo "pcmanfm"
+            fi
+            ;;
         * )
             if [ ! -z "$(command -v zenity)" ]; then
                 zenity --list --title='What tool do you want to use?' --column='select' --radiolist --column='tool' --column='label' --hide-column=2 \
@@ -71,19 +77,19 @@ function guess_env {
 
 # Check whether the number of screens provided is an integer
 if [ -z "$(echo ${NB_SCREENS} | grep -E '^[0-9]*$')" ]; then
-    echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" > &2
+    echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" >&2
     exit 3
 fi
 
 # Check whether the walls directory exists
 if [ ! -d "${WALLS}" ]; then
-    echo "ERROR: directory ${WALLS} does not exist" > &2
+    echo "ERROR: directory ${WALLS} does not exist" >&2
     exit 1
 fi
 
 # Check whether it contains files
 if [ -z "$(find ${WALLS} -type f)" ]; then
-    echo "ERROR: directory ${WALLS} doesn't contain any file" > &2
+    echo "ERROR: directory ${WALLS} doesn't contain any file" >&2
     exit 1
 fi
 
@@ -96,8 +102,8 @@ fi
 
 # Check if the chosen tool is installed
 if [ -z "$(command -v ${TOOL})" ]; then
-    echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" > &2
-    echo "\$PATH: [ $PATH ]" > &2
+    echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" >&2
+    echo "\$PATH: [ $PATH ]" >&2
     exit 4
 fi
 
@@ -112,7 +118,7 @@ function wall_nitrogen {
 
     # Check nitrogen configuration folder
     if [ ! -d "${NITROGEN_CFG%\/*}" ]; then
-        echo "ERROR: directory ${NITROGEN_CFG} does not exist" > &2
+        echo "ERROR: directory ${NITROGEN_CFG} does not exist" >&2
         exit 2
     fi
 
@@ -168,6 +174,26 @@ function wall_xfconf-query {
         # Set it on the current screen
         xfconf-query -c xfce4-desktop -p "${line}" -s "${wall}"
     done
+}
+
+# Change wallpaper using pcmanfm (Lubuntu only)
+# All credit for this method goes to Charles Tassell(http://sourceforge.net/p/pcmanfm/bugs/866/#f74d)
+function wall_pcmanfm {
+
+    pcmanfmConfigPath=~/.config/pcmanfm/lubuntu
+    # Loop through screens
+    for path in "$pcmanfmConfigPath"/desktop-items-*.conf ; do
+        # Pick a wallpaper
+        wall="$(find ${WALLS} -type f | shuf -n 1)"
+        cat "$path" |sed 's|wallpaper=.*|wallpaper='"${wall}"'|' >/tmp/wp.$$
+        cp /tmp/wp.$$ "$path"
+        rm /tmp/wp.$$
+    done
+    
+    # Refresh wallpapers
+    pcmanfm --desktop-off
+    sleep 0.5s
+    pcmanfm --desktop --profile lubuntu &
 }
 
 # Call function to change wallpaper using chosen tool
