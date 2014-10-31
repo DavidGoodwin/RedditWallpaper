@@ -180,9 +180,9 @@ function wall_xfconf-query {
 # All credit for this method goes to Charles Tassell(http://sourceforge.net/p/pcmanfm/bugs/866/#f74d)
 function wall_pcmanfm {
 
-    profDir=~/.config/pcmanfm/lubuntu
+    pcmanfmConfigPath=~/.config/pcmanfm/lubuntu
     # Loop through screens
-    for path in "$profDir"/desktop-items-*.conf ; do
+    for path in "$pcmanfmConfigPath"/desktop-items-*.conf ; do
         # Pick a wallpaper
         wall="$(find ${WALLS} -type f | shuf -n 1)"
         cat "$path" |sed 's|wallpaper=.*|wallpaper='"${wall}"'|' >/tmp/wp.$$
