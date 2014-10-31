@@ -20,6 +20,7 @@ NITROGEN_CFG=$HOME/.config/nitrogen/bg-saved.cfg
 #   gsettings (for GNOME 3)
 #   feh
 #   xfconf-query (for XFCE 4)
+#   pcmanfm (for Lubuntu only)
 TOOL=""
 
 # Number of screens
@@ -54,6 +55,11 @@ function guess_env {
         xfce*|Xfce* )
             if [ ! -z "$(command -v xfconf-query)" ]; then
                 echo "xfconf-query"
+            fi
+            ;;
+        Lubuntu )
+            if [ ! -z "$(command -v pcmanfm)" ]; then
+                echo "pcmanfm"
             fi
             ;;
         * )
@@ -168,6 +174,26 @@ function wall_xfconf-query {
         # Set it on the current screen
         xfconf-query -c xfce4-desktop -p "${line}" -s "${wall}"
     done
+}
+
+# Change wallpaper using pcmanfm (Lubuntu only)
+# All credit for this method goes to Charles Tassell(http://sourceforge.net/p/pcmanfm/bugs/866/#f74d)
+function wall_pcmanfm {
+
+    profDir=~/.config/pcmanfm/lubuntu
+    # Loop through screens
+    for path in "$profDir"/desktop-items-*.conf ; do
+        # Pick a wallpaper
+        wall="$(find ${WALLS} -type f | shuf -n 1)"
+        cat "$path" |sed 's|wallpaper=.*|wallpaper='"${wall}"'|' >/tmp/wp.$$
+        cp /tmp/wp.$$ "$path"
+        rm /tmp/wp.$$
+    done
+    
+    # Refresh wallpapers
+    pcmanfm --desktop-off
+    sleep 0.5s
+    pcmanfm --desktop --profile lubuntu &
 }
 
 # Call function to change wallpaper using chosen tool
