@@ -14,6 +14,7 @@ Tools supported so far:
 + feh
 + gsettings (for GNOME 3)
 + xfconf-query (for XFCE 4)
++ pcmanfm (with Lubuntu)
 
 Installation
 ------------
@@ -23,7 +24,7 @@ $ cd ~/source
 ```
 Then download the scripts and open your crontab.
 ```bash
-$ git clone git@github.com:Alfred456654/AlfScripts.git
+$ git clone git@github.com:Alfred456654/RedditWallpaper.git
 $ crontab -e
 ```
 Then enter into the crontab the following lines. Though note that you have to replace \<your wm\> with the name of your window manager of choice, and change the path to the scripts if you downloaded them to another folder:
