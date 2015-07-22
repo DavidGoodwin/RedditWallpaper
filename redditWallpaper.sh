@@ -12,18 +12,23 @@ WALLS_DIR="$HOME/Pictures/todayswalls"
 # Backup directory
 OLD_DIR="$HOME/Pictures/oldwalls"
 
+# Files to ignore
+IGNORE_FILES="pixel.png icon.png"
+
 ## END CONFIGURATION
 
 
-# Check if said directories exist
+# Make sure that said directories exist
 mkdir -p "${WALLS_DIR}" "${OLD_DIR}"
 
 # Backup last execution's wallpapers to the backup directory
-mv "${WALLS_DIR}"/* "${OLD_DIR}/"
+[ "$(ls "${WALLS_DIR}")" ] && mv "${WALLS_DIR}"/* "${OLD_DIR}/"
 
 # Go to reddit.com/r/wallpapers, find parts of the page source that look like 'http[s?]://...png|jpg', cut the URLs out, and download them to the wallpapers directory
 curl "www.reddit.com/r/wallpapers/" 2>/dev/null | tr \< \\n | grep -E 'https?://[^"]*\.[jpng]*"' | sed -e 's!.*https\?://\([^"]*\.[jpng]*\).*!\1!g' | sort -u | while read line; do
-    FILENAME="$(basename $line)"
-    wget "$line" -O "${WALLS_DIR}/${FILENAME}"
+    FILENAME=$(basename "$line")
+    if ! echo "${IGNORE_FILES}" | grep -q "${FILENAME}"; then
+        wget "$line" -O "${WALLS_DIR}/${FILENAME}"
+    fi
 done
 

@@ -76,7 +76,7 @@ function guess_env {
 }
 
 # Check whether the number of screens provided is an integer
-if [ -z "$(echo ${NB_SCREENS} | grep -E '^[0-9]*$')" ]; then
+if ! echo "${NB_SCREENS}" | grep -q -E '^[0-9]*$'; then
     echo "ERROR: NB_SCREENS must be an integer (value found: '${NB_SCREENS}')" >&2
     exit 3
 fi
@@ -88,7 +88,7 @@ if [ ! -d "${WALLS}" ]; then
 fi
 
 # Check whether it contains files
-if [ -z "$(find ${WALLS} -type f)" ]; then
+if [ -z "$(find "${WALLS}" -type f)" ]; then
     echo "ERROR: directory ${WALLS} doesn't contain any file" >&2
     exit 1
 fi
@@ -101,7 +101,7 @@ else
 fi
 
 # Check if the chosen tool is installed
-if [ -z "$(command -v ${TOOL})" ]; then
+if [ -z "$(command -v "${TOOL}")" ]; then
     echo "ERROR: ${TOOL} does not seem to be installed, or ${TOOL} is not present in \$PATH" >&2
     echo "\$PATH: [ $PATH ]" >&2
     exit 4
@@ -130,15 +130,17 @@ function wall_nitrogen {
     for i in $(seq 1 ${NB_SCREENS}); do
 
         # Pick a random wallpaper
-        wall="$(find ${WALLS} -type f | shuf -n 1)"
-        wall="$(basename ${wall})"
+        wall=$(find "${WALLS}" -type f | shuf -n 1)
+        wall=$(basename "${wall}")
 
-        # Set first wallpaper
-        echo "[xin_$((i-1))]" >> "${NITROGEN_CFG}"
-        echo "file=${WALLS}/${wall}" >> "${NITROGEN_CFG}"
-        echo "mode=0" >> "${NITROGEN_CFG}"
-        echo "bgcolor=#000000" >> "${NITROGEN_CFG}"
-        echo "" >> "${NITROGEN_CFG}"
+        # Set wallpaper for this screen
+        {
+            echo "[xin_$((i-1))]"
+            echo "file=${WALLS}/${wall}"
+            echo "mode=0"
+            echo "bgcolor=#000000"
+            echo ""
+        } >> "${NITROGEN_CFG}"
     done
 
     nitrogen --restore
@@ -148,8 +150,8 @@ function wall_nitrogen {
 function wall_gsettings {
 
     # Picka  wallpaper
-    wall="$(find ${WALLS} -type f | shuf -n 1)"
-    wall="$(basename ${wall})"
+    wall="$(find "${WALLS}" -type f | shuf -n 1)"
+    wall="$(basename "${wall}")"
 
     # Set wallpaper
     gsettings set org.gnome.desktop.background picture-uri "file:///${WALLS}/${wall}"
@@ -169,7 +171,7 @@ function wall_xfconf-query {
     xfconf-query -c xfce4-desktop -l | grep -E '/backdrop/screen.*/monitor.*/image-path' | while read line; do
 
         # Pick a wallpaper
-        wall="$(find ${WALLS} -type f | shuf -n 1)"
+        wall="$(find "${WALLS}" -type f | shuf -n 1)"
 
         # Set it on the current screen
         xfconf-query -c xfce4-desktop -p "${line}" -s "${wall}"
@@ -184,8 +186,8 @@ function wall_pcmanfm {
     # Loop through screens
     for path in "$pcmanfmConfigPath"/desktop-items-*.conf ; do
         # Pick a wallpaper
-        wall="$(find ${WALLS} -type f | shuf -n 1)"
-        cat "$path" |sed 's|wallpaper=.*|wallpaper='"${wall}"'|' >/tmp/wp.$$
+        wall="$(find "${WALLS}" -type f | shuf -n 1)"
+        sed 's|wallpaper=.*|wallpaper='"${wall}"'|' "$path" >/tmp/wp.$$
         cp /tmp/wp.$$ "$path"
         rm /tmp/wp.$$
     done
@@ -197,5 +199,5 @@ function wall_pcmanfm {
 }
 
 # Call function to change wallpaper using chosen tool
-wall_${TOOL}
+wall_"${TOOL}"
 
