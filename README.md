@@ -29,7 +29,7 @@ $ crontab -e
 ```
 Then enter into the crontab the following lines. Though note that you have to replace \<your wm\> with the name of your window manager of choice, and change the path to the scripts if you downloaded them to another folder:
 ```cron
-1      1   *   *   *   /home/$(whoami)/source/AlfScripts/redditWallpaper.sh
+1      1   *   *   *   /home/$(whoami)/source/RedditWallpaper/redditWallpaper.sh
 */15   *   *   *   *   DESKTOP_SESSION=<your wm> DISPLAY=:0.0 /home/$(whoami)/source/AlfScripts/randomWallpaper.sh
 ```
 
