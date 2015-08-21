@@ -32,3 +32,8 @@ Then enter into the crontab the following lines. Though note that you have to re
 1      1   *   *   *   /home/$(whoami)/source/AlfScripts/redditWallpaper.sh
 */15   *   *   *   *   DESKTOP_SESSION=<your wm> DISPLAY=:0.0 /home/$(whoami)/source/AlfScripts/randomWallpaper.sh
 ```
+
+Known Bugs
+------------
+Sometimes, the configuration file written by `randomWallpaper.sh` for `nitrogen` isn't right (by default, `$HOME/.config/nitrogen/bg-saved.cfg`). The names of the sections created by `randomWallpaper.sh` are `[xin_0]`, `[xin_1]`... but nitrogen sometimes uses sections named `[:0.0]`, ...
+Modify the script according to your needs.
