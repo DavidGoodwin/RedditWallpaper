@@ -18,11 +18,32 @@ OLD_DIR="$HOME/Pictures/oldwalls"
 # Files to ignore
 IGNORE_FILES="pixel.png icon.png"
 
+# Put this parameter to 1 to only allow 1 execution per day.
+# That way, if you ever have to close & reopen your session several times, this won't execute the same thing over and over.
+ONCE_PER_DAY=1
+
 ## END CONFIGURATION
 
 
+# File dated to the last execution
+LAST_EXEC="${OLD_DIR}/.last_exec"
+
 # Make sure that said directories exist
 mkdir -p "${WALLS_DIR}" "${OLD_DIR}"
+
+# Check whether script has already been executed today, if this is the wanted behaviour. Exit without error if it is the case.
+if [ "$ONCE_PER_DAY" -eq 1 ]; then
+    if [ -f "$LAST_EXEC" ]; then
+        OLD_DATE=$(date -r "$LAST_EXEC" +%D)
+        TODAY=$(date +%D)
+        if [ "$OLD_DATE" == "$TODAY" ]; then
+            exit 0
+        fi
+    fi
+fi
+
+# Mark that last execution is now
+touch "$LAST_EXEC"
 
 # Backup last execution's wallpapers to the backup directory
 [ "$(ls "${WALLS_DIR}")" ] && mv "${WALLS_DIR}"/* "${OLD_DIR}/"
