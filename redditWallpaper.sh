@@ -3,6 +3,8 @@
 # This script goes to http://www.reddit.com/r/wallpapers, fetches a few images, and writes them to the directory of your choice.
 # Everytime you execute it, it backs up the wallpapers from the last execution to the directory of your choice.
 
+# abort on error.
+set -e
 
 ## CONFIGURATION
 
@@ -32,13 +34,11 @@ LAST_EXEC="${OLD_DIR}/.last_exec"
 mkdir -p "${WALLS_DIR}" "${OLD_DIR}"
 
 # Check whether script has already been executed today, if this is the wanted behaviour. Exit without error if it is the case.
-if [ "$ONCE_PER_DAY" -eq 1 ]; then
-    if [ -f "$LAST_EXEC" ]; then
-        OLD_DATE=$(date -r "$LAST_EXEC" +%D)
-        TODAY=$(date +%D)
-        if [ "$OLD_DATE" == "$TODAY" ]; then
-            exit 0
-        fi
+if [ "$ONCE_PER_DAY" -eq 1 -a -f $LAST_EXEC ]; then
+    OLD_DATE=$(date -r "$LAST_EXEC" +%D)
+    TODAY=$(date +%D)
+    if [ "$OLD_DATE" = "$TODAY" ]; then
+        exit 0
     fi
 fi
 
@@ -46,10 +46,10 @@ fi
 touch "$LAST_EXEC"
 
 # Backup last execution's wallpapers to the backup directory
-[ "$(ls "${WALLS_DIR}")" ] && mv "${WALLS_DIR}"/* "${OLD_DIR}/"
+cd "${WALLS_DIR}" && find ./  -maxdepth 1 -mindepth 1 -type f -exec mv -t ${OLD_DIR} {} +
 
 # Go to reddit.com/r/wallpapers, find parts of the page source that look like 'http[s?]://...png|jpg', cut the URLs out, and download them to the wallpapers directory
-curl "$URL" 2>/dev/null | tr \< \\n | grep -E 'https?://[^"]*\.[jpng]*"' | sed -e 's!.*https\?://\([^"]*\.[jpng]*\).*!\1!g' | sort -u | while read line; do
+wget -q -O - "$URL" 2>/dev/null | tr \< \\n | grep -E 'https?://[^"]*\.[jpng]*"' | sed -e 's!.*https\?://\([^"]*\.[jpng]*\).*!\1!g' | sort -u | while read line; do
     FILENAME=$(basename "$line")
     if ! echo "${IGNORE_FILES}" | grep -q "${FILENAME}"; then
         wget "$line" -O "${WALLS_DIR}/${FILENAME}"
