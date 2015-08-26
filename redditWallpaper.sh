@@ -22,7 +22,7 @@ IGNORE_FILES="pixel.png icon.png"
 
 # Put this parameter to 1 to only allow 1 execution per day.
 # That way, if you ever have to close & reopen your session several times, this won't execute the same thing over and over.
-ONCE_PER_DAY=1
+ONCE_PER_DAY=0
 
 ## END CONFIGURATION
 
@@ -48,11 +48,20 @@ touch "$LAST_EXEC"
 # Backup last execution's wallpapers to the backup directory
 cd "${WALLS_DIR}" && find ./  -maxdepth 1 -mindepth 1 -type f -exec mv -t ${OLD_DIR} {} +
 
+echo "# xfce backdrop list" > "${WALLS_DIR}"/index.list
+
 # Go to reddit.com/r/wallpapers, find parts of the page source that look like 'http[s?]://...png|jpg', cut the URLs out, and download them to the wallpapers directory
 wget -q -O - "$URL" 2>/dev/null | tr \< \\n | grep -E 'https?://[^"]*\.[jpng]*"' | sed -e 's!.*https\?://\([^"]*\.[jpng]*\).*!\1!g' | sort -u | while read line; do
     FILENAME=$(basename "$line")
+    DEST_FILENAME="${WALLS_DIR}/${FILENAME}"
+
+    [ -f "$DEST_FILENAME" ] && continue
+
     if ! echo "${IGNORE_FILES}" | grep -q "${FILENAME}"; then
-        wget "$line" -O "${WALLS_DIR}/${FILENAME}"
+        wget "$line" -O "$DEST_FILENAME"
     fi
+
+    echo "${WALLS_DIR}/${FILENAME}" >> "${WALLS_DIR}"/index.list
+
 done
 
