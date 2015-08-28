@@ -11,7 +11,7 @@ set -e
 ## CONFIGURATION
 
 # URL of the page to parse
-URL="https://www.reddit.com/r/wallpapers/"
+URL="https://www.reddit.com/r/wallpapers/.rss"
 
 # Wallpapers directory
 WALLS_DIR="$HOME/Pictures/todayswalls"
@@ -25,7 +25,7 @@ IGNORE_FILES="pixel.png icon.png"
 # Put this parameter to 1 to only allow 1 execution per day.
 # That way, if you ever have to close & reopen your session several times, 
 # this won't execute the same thing over and over.
-ONCE_PER_DAY=1
+ONCE_PER_DAY=0
 
 ## END CONFIGURATION
 
@@ -53,18 +53,13 @@ touch "$LAST_EXEC"
 
 cd "${WALLS_DIR}" && find ./  -maxdepth 1 -mindepth 1 -mtime +1 -type f -exec mv -t ${OLD_DIR} {} +
 
-ls $WALLS_DIR
-
 echo "# xfce backdrop list" > "${WALLS_DIR}"/index.list
 
 # Go to reddit.com/r/wallpapers, 
 # find parts of the page source that look like 'http[s?]://...png|jpg', 
 # cut the URLs out, and download them to the wallpapers directory
 FILE_LIST=$( wget -q -O - "$URL" 2>/dev/null | \
-    tr \< \\n | \
-    grep -E 'https?://[^"]*\.[jpng]*"' | \
-    sed -e 's!.*\(https\?://[^"]*\.[jpng]*\).*!\1!g' | \
-    sort -u )
+    perl -ne 'for (/&#34;(https?\:\/\/[^s]+?[jpgng])&#34;&gt;\[link/g) { print $_ ."\n" }' | sort -u )
 
 OIFS="$IFS"
 IFS=$'\n'
@@ -83,7 +78,7 @@ do
         continue
     fi
 
-    wget -q "$IMAGE_URL" -O "$DEST_FILENAME"
+    wget --no-use-server-timestamps -q "$IMAGE_URL" -O "$DEST_FILENAME"
     counter=$(( $counter + 1 ))
 
     echo "${WALLS_DIR}/${FILENAME}" >> "${WALLS_DIR}"/index.list
