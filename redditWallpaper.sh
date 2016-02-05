@@ -59,7 +59,7 @@ echo "# xfce backdrop list" > "${WALLS_DIR}"/index.list
 # find parts of the page source that look like 'http[s?]://...png|jpg', 
 # cut the URLs out, and download them to the wallpapers directory
 FILE_LIST=$( wget -q -O - "$URL" 2>/dev/null | \
-    perl -ne 'for (/&#34;(https?\:\/\/[^s]+?[jpgng])&#34;&gt;\[link/g) { print $_ ."\n" }' | sort -u )
+    perl -ne 'for (/&quot;(https?\:\/\/[^s]+?[jpgng])&quot;&gt;\[link/g) { print $_ ."\n" }' | sort -u )
 
 OIFS="$IFS"
 IFS=$'\n'
