@@ -1,8 +1,10 @@
 RedditWallpaper
 ==========
-redditWallpaper.sh
+redditWallpaper.php
 ------------------
-This downloads some wallpapers from http://www.reddit.com/r/wallpapers "hot" page to a directory of your choice. It backs up the ones from the previous execution to another directory of your choice.
+This downloads some (10?) wallpapers from http://www.reddit.com/r/wallpapers to a directory of your choice. 
+
+It backs up the ones from the previous execution to another directory of your choice.
 
 randomWallpaper.sh
 --------------------
@@ -24,12 +26,12 @@ $ cd ~/source
 ```
 Then download the scripts and open your crontab.
 ```bash
-$ git clone https://github.com/Alfred456654/RedditWallpaper.git
+$ git clone https://github.com/DavidGoodwin/RedditWallpaper.git
 $ crontab -e
 ```
 Then enter into the crontab the following lines. Though note that you have to replace \<your wm\> with the name of your window manager of choice, and change the path to the scripts if you downloaded them to another folder:
 ```cron
-1      1   *   *   *   /path/to/RedditWallpaper/redditWallpaper.sh
+1      1   *   *   *   /usr/bin/php /path/to/RedditWallpaper/redditWallpaper.php
 */15   *   *   *   *   DESKTOP_SESSION=<your wm> DISPLAY=:0.0 /path/to/randomWallpaper.sh
 ```
 

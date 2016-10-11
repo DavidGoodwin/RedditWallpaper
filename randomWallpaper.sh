@@ -24,7 +24,7 @@ NITROGEN_CFG=$HOME/.config/nitrogen/bg-saved.cfg
 TOOL=""
 
 # Number of screens
-NB_SCREENS=2
+NB_SCREENS=3
 
 ## END CONFIGURATION
 
