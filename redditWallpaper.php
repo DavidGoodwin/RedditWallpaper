@@ -67,11 +67,11 @@ foreach(glob(WALLS_DIR .'/*') as $file) {
 file_put_contents(WALLS_DIR . '/index.list', "# xfce backdrop list\n" );
 
 
-$raw = file_get_contents('https://reddit.com/r/wallpapers.json');
+$raw = file_get_contents('https://www.reddit.com/r/wallpapers.json');
 if(empty($raw)) {
     die("HTTP Error?");
 }
-$data = json_decode(file_get_contents("https://reddit.com/r/wallpapers.json"), true); 
+$data = json_decode(file_get_contents("https://www.reddit.com/r/wallpapers.json"), true); 
 
 if(empty($data)) {
     die("JSON error?");
