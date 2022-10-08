@@ -19,7 +19,7 @@ define('LAST_EXEC', '/home/david/Pictures/oldwalls/.last_exec');
 # this won't execute the same thing over and over.
 define('ONCE_PER_DAY',0);
 
-define('DEBUG', 0);
+define('DEBUG', 1);
 
 function _log_it($msg) {
     if(DEBUG == 1) {
@@ -28,6 +28,10 @@ function _log_it($msg) {
 }
 ## END CONFIGURATION
 
+if(DEBUG == 1) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 'on');
+}
 
 
 if(!is_dir(WALLS_DIR) || !is_dir(OLD_DIR)) {
@@ -50,7 +54,13 @@ touch(LAST_EXEC);
 
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 foreach(glob(WALLS_DIR .'/*') as $file) {
-    if(basename($file) == 'image.lst') {
+    if(basename($file) == 'image.list') {
+        continue;
+    }
+
+    if(filesize($file) == 0) {
+        _log_it("$file is empty; nuking");
+        unlink($file);
         continue;
     }
 
@@ -60,7 +70,7 @@ foreach(glob(WALLS_DIR .'/*') as $file) {
         rename($file, OLD_DIR . '/'. basename($file));
     }
     else {
-        _log_it("Weird mimetpye - $mimetype for $file");
+        _log_it("Weird mimetype - for $file " . json_encode(['file' => $file, 'mimetype' => $mimetype]));
     }
 }
 
@@ -102,6 +112,11 @@ foreach($data["data"]["children"] as $node) {
     }
 
     $raw = file_get_contents($src);
+
+    if(empty($raw)) {
+        _log_it("Download of $src failed - no content returned.");
+        continue;
+    }
     file_put_contents($dest, $raw);
     $counter++;
     file_put_contents(WALLS_DIR . '/index.list', $dest . "\n", FILE_APPEND);
