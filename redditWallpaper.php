@@ -19,7 +19,7 @@ define('LAST_EXEC', '/home/david/Pictures/oldwalls/.last_exec');
 # this won't execute the same thing over and over.
 define('ONCE_PER_DAY',0);
 
-define('DEBUG', 1);
+define('DEBUG', 0);
 
 function _log_it($msg) {
     if(DEBUG == 1) {
@@ -122,4 +122,4 @@ foreach($data["data"]["children"] as $node) {
     file_put_contents(WALLS_DIR . '/index.list', $dest . "\n", FILE_APPEND);
 }
 
-echo "Downloaded: $counter images to " . WALLS_DIR;
+_log_it("Downloaded: $counter images to " . WALLS_DIR);
