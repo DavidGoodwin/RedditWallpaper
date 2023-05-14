@@ -21,6 +21,13 @@ define('ONCE_PER_DAY',0);
 
 define('DEBUG', 0);
 
+$options  = [
+    'http' => [
+        'method' => 'GET',
+        'header'=> 'User-Agent: wallpaper fetching script\r\n'
+    ]
+];
+
 function _log_it($msg) {
     if(DEBUG == 1) {
         echo " DEBUG : $msg \n";
@@ -76,12 +83,13 @@ foreach(glob(WALLS_DIR .'/*') as $file) {
 
 file_put_contents(WALLS_DIR . '/index.list', "# xfce backdrop list\n" );
 
+$context = stream_context_create($options);
 
-$raw = file_get_contents('https://www.reddit.com/r/wallpapers.json');
+$raw = file_get_contents('https://www.reddit.com/r/wallpapers.json', false, $context);
 if(empty($raw)) {
     die("HTTP Error?");
 }
-$data = json_decode(file_get_contents("https://www.reddit.com/r/wallpapers.json"), true); 
+$data = json_decode($raw, true);
 
 if(empty($data)) {
     die("JSON error?");
@@ -111,7 +119,7 @@ foreach($data["data"]["children"] as $node) {
         continue;
     }
 
-    $raw = file_get_contents($src);
+    $raw = file_get_contents($src, false, $context);
 
     if(empty($raw)) {
         _log_it("Download of $src failed - no content returned.");
