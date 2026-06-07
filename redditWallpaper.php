@@ -19,19 +19,66 @@ define('LAST_EXEC', '/home/david/Pictures/oldwalls/.last_exec');
 # this won't execute the same thing over and over.
 define('ONCE_PER_DAY',0);
 
-define('DEBUG', 0);
+define('DEBUG', 1);
 
-$options  = [
-    'http' => [
-        'method' => 'GET',
-        'header'=> 'User-Agent: wallpaper fetching script\r\n'
-    ]
-];
+# Reddit blocks generic and browser-spoofed User-Agents with "403 Blocked".
+# It explicitly asks for a unique, descriptive UA in the form:
+#   <platform>:<app id>:<version> (by /u/<username>)
+# Using one of these is the single most effective way to stop being blocked.
+define('USER_AGENT', 'linux:redditwallpaper:v2.0 (by /u/thegingerdog)');
+
+# How many times to attempt a request before giving up.
+define('MAX_ATTEMPTS', 5);
+
+# Polite pause (microseconds) between image downloads to ease off rate limits.
+define('DOWNLOAD_DELAY', 750000);
 
 function _log_it($msg) {
     if(DEBUG == 1) {
         echo " DEBUG : $msg \n";
     }
+}
+
+# Fetch a URL with a descriptive UA, retrying with exponential backoff + jitter
+# on the transient / rate-limit / block statuses Reddit throws (403, 429, 5xx).
+# Returns the response body on success, or false if every attempt failed.
+function http_get($url) {
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL            => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 3,
+        CURLOPT_USERAGENT      => USER_AGENT,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_ENCODING       => '', // advertise gzip/deflate, let curl decode
+    ]);
+
+    for($attempt = 1; $attempt <= MAX_ATTEMPTS; $attempt++) {
+        $body = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $err  = curl_errno($ch);
+
+        if($err === 0 && $code >= 200 && $code < 300) {
+            curl_close($ch);
+            return $body;
+        }
+
+        $retryable = $err !== 0 || in_array($code, [403, 429, 500, 502, 503, 504]);
+        if(!$retryable || $attempt === MAX_ATTEMPTS) {
+            _log_it("Fetch failed for $url (HTTP $code" . ($err ? ", curl: " . curl_error($ch) : "") . ") after $attempt attempt(s)");
+            break;
+        }
+
+        # Exponential backoff with jitter: ~2s, 4s, 8s, 16s, capped at 60s.
+        $wait = min(60, 1 << $attempt) + random_int(0, 1000) / 1000;
+        _log_it("Fetch $url got HTTP $code (attempt $attempt/" . MAX_ATTEMPTS . "); sleeping " . round($wait, 1) . "s");
+        usleep((int)($wait * 1000000));
+    }
+
+    curl_close($ch);
+    return false;
 }
 ## END CONFIGURATION
 
@@ -61,7 +108,7 @@ touch(LAST_EXEC);
 
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 foreach(glob(WALLS_DIR .'/*') as $file) {
-    if(basename($file) == 'image.list') {
+    if(in_array(basename($file),[ 'image.list', 'index.list'] )) {
         continue;
     }
 
@@ -72,7 +119,7 @@ foreach(glob(WALLS_DIR .'/*') as $file) {
     }
 
     $mimetype = finfo_file($finfo, $file);
-    if(in_array($mimetype, ['image/gif', 'image/jpeg', 'image/png'])) {
+    if(in_array($mimetype, ['image/gif', 'image/jpeg', 'image/png', 'image/webp'])) {
         _log_it("moving $file to OLD_DIR");
         rename($file, OLD_DIR . '/'. basename($file));
     }
@@ -83,11 +130,9 @@ foreach(glob(WALLS_DIR .'/*') as $file) {
 
 file_put_contents(WALLS_DIR . '/index.list', "# xfce backdrop list\n" );
 
-$context = stream_context_create($options);
-
-$raw = file_get_contents('https://www.reddit.com/r/wallpapers.json', false, $context);
-if(empty($raw)) {
-    die("HTTP Error?");
+$raw = http_get(URL);
+if($raw === false) {
+    die("Failed to fetch listing from " . URL . " - giving up.\n");
 }
 $data = json_decode($raw, true);
 
@@ -109,24 +154,46 @@ foreach($data["data"]["children"] as $node) {
 
     $src = $node['data']['url'];
 
+    _log_it("Candidate Image: $src");
     if(!preg_match('/i\.redd\.it/', $src)) {
         continue; // avoid imgur
     }
 
-    _log_it("Image: $src");
+    $created = $node['data']['created'] ?? 0;
+    $created_human = date('c', $created);
+    $abit_ago = strtotime('4 days ago');
+    if($created < $abit_ago) {
+        _log_it(" - too old: $src - skipping - {$created}/{$created_human} vs {$abit_ago}");
+        continue;
+    }
     $dest = WALLS_DIR . '/'. basename($src);
     if(file_exists($dest)) {
+        _log_it(" - already exists: $src - skipping");
         continue;
     }
 
-    $raw = file_get_contents($src, false, $context);
+    usleep(DOWNLOAD_DELAY);
+    $raw = http_get($src);
 
-    if(empty($raw)) {
+    if($raw === false) {
         _log_it("Download of $src failed - no content returned.");
         continue;
     }
     file_put_contents($dest, $raw);
     $counter++;
+
+    $mimetype = finfo_file($finfo, $dest);
+    if($mimetype == 'image/webp') {
+        // try and convert from webp to png?
+        if(file_exists('/usr/bin/dwebp')) {
+            $dest_png = $dest . '.png';
+            $output = system("dwebp $dest -o $dest_png", $retval);
+
+            if($retval != 0) {
+                _log_it("Tried to convert $dest to $dest_png but failed? $output");
+            }
+        }
+    }
     file_put_contents(WALLS_DIR . '/index.list', $dest . "\n", FILE_APPEND);
 }
 
